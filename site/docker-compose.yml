@@ -1,0 +1,12 @@
+version: "3"
+services:
+  fantasy-football-site:
+    image: fantasy-football-site
+    build:
+      dockerfile: Dockerfile
+      context: .
+    container_name: fantasy-football-site
+    environment:
+      - PORT=5000
+    ports:
+      - "5000:5000"

@@ -1,0 +1,16 @@
+.svg-container {
+  display: inline-block;
+  position: relative;
+  width: 25%;
+  padding-top: 15%;
+  vertical-align: top;
+}
+
+.svg-content-responsive {
+  display: inline-block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+}
