@@ -6,7 +6,7 @@ app.get("/", function (req, res) {
 });
 
 app.get("/data.json", function (req, res) {
-    res.sendFile(__dirname + "/data.json");
+    res.sendFile(__dirname + "/data/data.json");
 });
 
 app.use("/css", express.static(__dirname + "/css"));

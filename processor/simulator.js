@@ -14,6 +14,7 @@ class Team {
 const today = new Date();
 const week1 = new Date(2021, 8, 7) // Tuesday, 9/14 (2 days before start of week 1)
 const weeksCompleted = Math.floor((today - week1) / (1000 * 60 * 60 * 24 * 7));
+console.log(weeksCompleted);
 
 function simulate(teamDict, weeks) {
     const teams = {};
@@ -43,11 +44,13 @@ function simulate(teamDict, weeks) {
     }
 
     // calculate mean and standard deviation of points scored for each team to use in simulation
+    console.log("Name|Wins|Points|Mean|Standard Deviation");
     for (let key in teams) {
         const team = teams[key];
         team.currentPoints = math.sum(team.scores);
         team.mean = math.mean(team.scores);
         team.stdDev = math.std(team.scores);
+        console.log(`${team.name}|${team.currentWins}|${team.currentPoints.toFixed(2)}|${team.mean.toFixed(2)}|${team.stdDev.toFixed(2)}`);
     }
 
     // simulate future matchups x number of times
@@ -125,6 +128,7 @@ function simulate(teamDict, weeks) {
 
     return results;
 }
+
 
 module.exports = {
     simulate: simulate

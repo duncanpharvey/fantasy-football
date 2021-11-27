@@ -1,0 +1,26 @@
+version: "3.7"
+services:
+  fantasy-football-data-processor:
+    image: fantasy-football-data-processor
+    build:
+      dockerfile: Dockerfile
+      context: ./processor/.
+    container_name: fantasy-football-data-processor
+    env_file: ./processor/.env
+    volumes:
+      - app-volume:/usr/src/app/data
+  fantasy-football-site:
+    image: fantasy-football-site
+    build:
+      dockerfile: Dockerfile
+      context: ./site/.
+    container_name: fantasy-football-site
+    environment:
+      - PORT=5000
+    ports:
+      - "5000:5000"
+    volumes:
+      - app-volume:/usr/src/app/data
+
+volumes:
+  app-volume:

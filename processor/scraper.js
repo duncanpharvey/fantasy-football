@@ -33,8 +33,8 @@ async function scrapeData() {
     // get all matchups and scrape scores from matchups that have already occurred
     const matchups = {};
     for (let i = 1; i <= 15; i++) {
-        await page.goto(`https://fantasy.nfl.com/league/1697750?scheduleDetail=${i}&scheduleType=week&standingsTab=schedule`);
-        await page.waitForSelector(".scheduleContent");
+        await page.goto(`https://fantasy.nfl.com/league/1697750?scoreStripType=fantasy&week=${i}`);
+        await page.waitForFunction("document.querySelectorAll(\"#leagueHomeScoreStrip .teamNav li .teamTotal\").length == 12");
         console.log(`scraping week ${i} data`);
         matchups[i] = await getWeeklyMatchups(page);
     }
@@ -46,12 +46,12 @@ async function scrapeData() {
 async function getWeeklyMatchups(page) {
     const results = await page.evaluate(() => {
         const weeklyMatchups = [];
-        const elements = document.querySelectorAll(".matchup");
+        const elements = document.querySelectorAll("#leagueHomeScoreStrip .teamNav li");
         for (let e of elements) {
-            const id1 = e.querySelector(".teamWrap-1 > a").getAttribute("href").match(/\d+$/)[0];
-            const score1 = e.querySelector(".teamWrap-1 > .teamTotal").textContent;
-            const id2 = e.querySelector(".teamWrap-2 > a").getAttribute("href").match(/\d+$/)[0];
-            const score2 = e.querySelector(".teamWrap-2 > .teamTotal").textContent;
+            const id1 = e.querySelector(".first > .teamTotal").classList[1].match(/\d+$/)[0];
+            const score1 = e.querySelector(".first > .teamTotal").textContent;
+            const id2 = e.querySelector(".last > .teamTotal").classList[1].match(/\d+$/)[0];
+            const score2 = e.querySelector(".last > .teamTotal").textContent;
             const matchup = { id1: parseInt(id1), score1: parseFloat(score1), id2: parseInt(id2), score2: parseFloat(score2) };
             weeklyMatchups.push(matchup);
         }
