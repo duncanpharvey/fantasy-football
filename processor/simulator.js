@@ -1,5 +1,6 @@
 const math = require("mathjs");
 const randomNormal = require("random-normal");
+const { client, collection } = require("./mongo");
 
 class Team {
     constructor(id, name) {
@@ -11,21 +12,21 @@ class Team {
     }
 }
 
-const today = new Date();
-const week1 = new Date(2021, 8, 7) // Tuesday, 9/14 (2 days before start of week 1)
-const weeksCompleted = Math.floor((today - week1) / (1000 * 60 * 60 * 24 * 7));
-console.log(weeksCompleted);
+async function simulate() {
+    await client.connect();
 
-function simulate(teamDict, weeks) {
+    const results1 = await collection.find({ "team_id": { "$exists": true } }).toArray();
+
     const teams = {};
-    for (let key in teamDict) {
-        teams[key] = new Team(key, teamDict[key])
-    }
+    results1.forEach(team => {
+        teams[team.team_id] = new Team(team.team_id, team.name);
+    });
 
     // sum wins and scores using matchups to date
-    for (let i = 1; i <= weeksCompleted; i++) {
-        const matchups = weeks[i];
-        for (const matchup of matchups) {
+    const completedWeeks = await collection.find({ "week": { "$exists": true }, "completed": true }).toArray();
+    console.log(`Weeks to summarize: ${completedWeeks.map(x => x.week)}`);
+    completedWeeks.forEach(week => {
+        for (let matchup of week.matchups) {
             id1 = matchup.id1;
             score1 = matchup.score1;
             id2 = matchup.id2;
@@ -41,25 +42,24 @@ function simulate(teamDict, weeks) {
                 teams[id2].currentWins += 0.5;
             }
         }
-    }
+    });
 
-    // calculate mean and standard deviation of points scored for each team to use in simulation
-    console.log("Name|Wins|Points|Mean|Standard Deviation");
+    // calculate mean and standard deviation for log of points scored for each team to use in simulation
+    // weekly point distribution is right skewed (lognormal distribution)
     for (let key in teams) {
         const team = teams[key];
         team.currentPoints = math.sum(team.scores);
-        team.mean = math.mean(team.scores);
-        team.stdDev = math.std(team.scores);
-        console.log(`${team.name}|${team.currentWins}|${team.currentPoints.toFixed(2)}|${team.mean.toFixed(2)}|${team.stdDev.toFixed(2)}`);
+
+        const logScores = team.scores.map(x => math.log(x));
+        team.mean = math.mean(logScores);
+        team.stdDev = math.std(logScores);
     }
 
     // simulate future matchups x number of times
     const trials = 1000000;
-    for (let x = 0; x < trials; x++) {
-        if (x % 10000 == 0) {
-            console.log(`completed ${x} trials`);
-        }
-
+    const weeksToPlay = await collection.find({ "week": { "$exists": true }, "completed": false }).toArray();
+    console.log(`Weeks to simulate: ${weeksToPlay.map(x => x.week)}`);
+    for (let x = 1; x <= trials; x++) {
         for (let key in teams) {
             const team = teams[key];
 
@@ -69,14 +69,14 @@ function simulate(teamDict, weeks) {
         }
 
         // simulate future games using randomly generated score with mean and standard deviation
-        for (let i = weeksCompleted + 1; i <= 15; i++) {
-            games = weeks[i];
-            for (const game of games) {
-                team1 = teams[game.id1];
-                team2 = teams[game.id2];
+        weeksToPlay.forEach(week => {
+            games = week.matchups;
+            for (let game of games) {
+                const team1 = teams[game.id1];
+                const team2 = teams[game.id2];
 
-                score1 = randomNormal({ mean: team1.mean, dev: team1.stdDev });
-                score2 = randomNormal({ mean: team2.mean, dev: team2.stdDev });
+                const score1 = math.exp(randomNormal({ mean: team1.mean, dev: team1.stdDev }));
+                const score2 = math.exp(randomNormal({ mean: team2.mean, dev: team2.stdDev }));
 
                 if (score1 > score2) team1.wins += 1;
                 else if (score2 > score1) team2.wins += 1;
@@ -88,7 +88,7 @@ function simulate(teamDict, weeks) {
                 team1.points += score1;
                 team2.points += score2;
             }
-        }
+        });
 
         // sort by descending wins then by descending points
         const sorted = Object.values(teams).sort((a, b) => { return b.wins - a.wins || b.points - a.points });
@@ -97,6 +97,10 @@ function simulate(teamDict, weeks) {
         for (let i = 0; i < sorted.length; i++) {
             const team = sorted[i];
             team.rankSummary[i] += 1;
+        }
+
+        if (x % 10000 == 0) {
+            console.log(`completed ${x} trials`);
         }
     }
 
@@ -126,9 +130,9 @@ function simulate(teamDict, weeks) {
         };
     });
 
+    client.close();
     return results;
 }
-
 
 module.exports = {
     simulate: simulate

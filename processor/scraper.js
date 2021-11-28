@@ -1,6 +1,7 @@
 const puppeteer = require("puppeteer");
+const { client, collection } = require("./mongo");
 
-async function scrapeData() {
+async function scrapeData(weeksToScrape, numWeeksCompleted) {
     const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] });
     const page = await browser.newPage();
     await page.goto("https://fantasy.nfl.com/league/1697750");
@@ -20,27 +21,32 @@ async function scrapeData() {
     await page.waitForSelector(".tableType-team .teamName");
     console.log("scraping team data");
     const teams = await page.evaluate(() => {
-        const teams = {};
+        const teams = [];
         const elements = document.querySelectorAll(".tableType-team .teamName");
         for (let e of elements) {
             const id = e.getAttribute("href").match(/\d+$/)[0];
             const name = e.textContent;
-            teams[id] = name;
+            teams.push({ "team_id": parseInt(id), "name": name });
         }
         return teams;
     });
 
-    // get all matchups and scrape scores from matchups that have already occurred
-    const matchups = {};
-    for (let i = 1; i <= 15; i++) {
+    await client.connect();
+    teams.forEach(async team => {
+        await collection.updateOne({ "team_id": team.team_id }, { $set: team }, { upsert: true });
+    });
+
+    // get matchups and scores
+    for (let i of weeksToScrape) {
         await page.goto(`https://fantasy.nfl.com/league/1697750?scoreStripType=fantasy&week=${i}`);
         await page.waitForFunction("document.querySelectorAll(\"#leagueHomeScoreStrip .teamNav li .teamTotal\").length == 12");
         console.log(`scraping week ${i} data`);
-        matchups[i] = await getWeeklyMatchups(page);
+        const weeklyMatchups = await getWeeklyMatchups(page);
+        await collection.updateOne({ "week": i }, { $set: { "week": i, "completed": i <= numWeeksCompleted, "matchups": weeklyMatchups } }, { upsert: true });
     }
 
     await browser.close();
-    return { "teams": teams, "matchups": matchups }
+    client.close();
 }
 
 async function getWeeklyMatchups(page) {
