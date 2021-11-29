@@ -1,4 +1,4 @@
-fetch("http://localhost:5000/data.json").then(response => response.json())
+fetch(`http://localhost/data`).then(response => response.json())
     .then(data => {
         data.forEach(team => createGraph(team));
     });

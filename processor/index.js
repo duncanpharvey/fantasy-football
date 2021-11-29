@@ -1,6 +1,5 @@
 const scraper = require("./scraper");
 const simulator = require("./simulator");
-const fs = require("fs");
 const { client, collection } = require("./mongo");
 
 main();
@@ -24,7 +23,9 @@ async function main() {
 
     //  find scores that haven't been scraped for matchups
     const results2 = await collection.find({ "week": { "$lte": numWeeksCompleted }, "completed": false }).toArray();
+
     results2.forEach(item => weeksToScrapeSet.add(item.week));
+
     const weeksToScrape = Array.from(weeksToScrapeSet);
     console.log(`Weeks to scrape: ${weeksToScrape.length > 0 ? weeksToScrape : "None"}`);
 
@@ -33,15 +34,7 @@ async function main() {
         await scraper.scrapeData(weeksToScrape, numWeeksCompleted);
     }
 
-    client.close();
+    await simulator.simulate();
 
-    const results = await simulator.simulate();
-    fs.writeFile('./data/data.json', JSON.stringify(results), 'utf8', err => {
-        if (err) {
-            console.log(err);
-        }
-        else {
-            console.log("File written successfully");
-        }
-    });
+    client.close();
 }

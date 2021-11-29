@@ -32,9 +32,9 @@ async function scrapeData(weeksToScrape, numWeeksCompleted) {
     });
 
     await client.connect();
-    teams.forEach(async team => {
+    for (let team of teams) {
         await collection.updateOne({ "team_id": team.team_id }, { $set: team }, { upsert: true });
-    });
+    }
 
     // get matchups and scores
     for (let i of weeksToScrape) {

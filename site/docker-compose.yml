@@ -1,0 +1,26 @@
+version: "3.7"
+services:
+  fantasy-football-site:
+    image: fantasy-football-site
+    build:
+      dockerfile: Dockerfile
+      context: .
+    container_name: fantasy-football-site
+    environment:
+      - PORT=8080
+    ports:
+      - "80:8080"
+    networks:
+      - fantasyfootballnet
+  mongodb:
+    image: mongo:latest
+    container_name: mongo
+    volumes:
+      - mongodb_data_container:/data/db
+    networks:
+      - fantasyfootballnet
+volumes:
+  mongodb_data_container:
+networks:
+  fantasyfootballnet:
+    name: fantasyfootballnet

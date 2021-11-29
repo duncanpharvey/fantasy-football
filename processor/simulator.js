@@ -124,14 +124,17 @@ async function simulate() {
             });
         }
         return {
-            "id": team.id,
+            "summary_id": team.id,
             "name": team.name,
             "ranks": ranks
         };
     });
 
+    for (let result of results) {
+        await collection.updateOne({ "summary_id": result.summary_id }, { $set: result }, { upsert: true });
+    };
+
     client.close();
-    return results;
 }
 
 module.exports = {
