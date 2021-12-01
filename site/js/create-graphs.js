@@ -1,6 +1,6 @@
 fetch(`http://localhost/data`).then(response => response.json())
     .then(data => {
-        data.forEach(team => createGraph(team));
+        data.sort((a, b) => { return a.expected_rank - b.expected_rank }).forEach(team => createGraph(team));
     });
 
 function createGraph(team) {
