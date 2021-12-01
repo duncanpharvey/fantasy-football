@@ -26,6 +26,6 @@ app.get("/data", async function (req, res) {
 app.use("/css", express.static(__dirname + "/css"));
 app.use("/js", express.static(__dirname + "/js"));
 
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 8080;
 console.log(`Listening on port ${port}`)
 app.listen(port);
