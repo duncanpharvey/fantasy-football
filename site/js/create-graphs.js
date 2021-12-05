@@ -9,22 +9,22 @@ function createGraph(team) {
 
     // graph dimensions
     const width = 300;
-    const height = 150;
+    const height = 180;
+    const hMargin = 60;
+    const vMargin = 36
 
     const svg = d3.select("#graph-container")
         .append("div")
         .classed("svg-container", true)
         .append("svg")
         .attr("preserveAspectRatio", "xMinYMin meet")
-        .attr("viewBox", `0 0 ${width + 50} ${height}`)
+        .attr("viewBox", `0 0 ${width + hMargin} ${height + vMargin}`)
         .classed("svg-content-responsive", true)
-        .attr("width", width)
-        .attr("height", height);
 
     // graph title
     svg.append("text")
         .attr("text-anchor", "middle")
-        .attr("transform", "translate(190, 20)")
+        .attr("transform", "translate(200, 18)")
         .attr("font-size", "16px")
         .text(name);
 
@@ -33,7 +33,7 @@ function createGraph(team) {
     const yScale = d3.scaleLinear().range([height, 0]);
 
     const g = svg.append("g")
-        .attr("transform", "translate(" + 40 + "," + 40 + ")");
+        .attr("transform", "translate(" + 0.6 * hMargin + "," + 0.5 * vMargin + ")");
 
     xScale.domain(ranks.map(d => { return d.rank; }));
     yScale.domain([0, 1]);
