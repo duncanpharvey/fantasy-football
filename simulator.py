@@ -62,7 +62,7 @@ async def main():
         team["total_points"] = sum(scores)
 
     team_ranks_summary = {team_id: [0] * len(teams) for team_id in teams.keys()}
-    trials = 1000
+    trials = 1000000
     for trial in range(trials):
         if trial % 100000 == 0:
             print(trial)
