@@ -6,7 +6,7 @@ const { client, collection } = require("./mongo");
     await client.connect();
 
     const today = new Date();
-    const week1 = new Date(2021, 8, 7) // Tuesday, 9/14 (2 days before start of week 1)
+    const week1 = new Date(2022, 8, 6) // Tuesday, 9/6 (2 days before start of week 1)
     const numWeeksCompleted = Math.min(15, Math.floor((today - week1) / (1000 * 60 * 60 * 24 * 7)));
     console.log(`Completed weeks: ${numWeeksCompleted}`);
 

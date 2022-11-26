@@ -6,15 +6,15 @@ async function scrapeData(weeksToScrape, numWeeksCompleted) {
     const page = await browser.newPage();
     await page.goto("https://fantasy.nfl.com/league/1697750");
     console.log("navigated to login");
-    await page.waitForSelector("#gigya-loginID-60062076330815260", { visible: true });
+    await page.waitForSelector("input[type=email]", { visible: true });
     console.log("username element loaded");
-    await page.waitForSelector("#gigya-password-85118380969228590", { visible: true });
+    await page.waitForSelector("input[type=password]", { visible: true });
     console.log("password element loaded");
-    await page.evaluate(`document.getElementById("gigya-loginID-60062076330815260").value="${process.env.NFL_USERNAME}";`);
+    await page.evaluate(`document.querySelector("input[type=email]").value="${process.env.NFL_USERNAME}";`);
     console.log("username typed");
-    await page.evaluate(`document.getElementById("gigya-password-85118380969228590").value="${process.env.NFL_PASSWORD}";`);
+    await page.evaluate(`document.querySelector("input[type=password]").value="${process.env.NFL_PASSWORD}";`);
     console.log("password typed");
-    await page.evaluate("document.querySelector(\"input[value='Sign In']\").click()");
+    await page.evaluate(`document.querySelector("input[value='Sign In']").click()`);
     console.log("sign in clicked");
 
     // scrape team data

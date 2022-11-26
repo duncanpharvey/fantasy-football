@@ -1,12 +1,11 @@
-fetch('../data.json').then(response => response.json())
+fetch(`${window.location.href}data`).then(response => response.json())
     .then(data => {
-        data.teams.forEach(team => createGraph(team));
+        data.sort((a, b) => { return a.expected_rank - b.expected_rank }).forEach(team => createGraph(team));
     });
 
 function createGraph(team) {
     const name = team.name;
     const ranks = team.ranks;
-    console.log(ranks)
 
     // graph dimensions
     const width = 300;
