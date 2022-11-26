@@ -40,10 +40,11 @@ function createGraph(team) {
     yScale.domain([0, 1]);
 
     g.append("g")
-        .attr("transform", "translate(0," + height + ")")
+        .attr("transform", `translate(0 ${height + 0.5})`)
         .call(d3.axisBottom(xScale));
 
     g.append("g")
+        .attr("transform", `translate(0 0.5)`)
         .call(d3.axisLeft(yScale)
             .tickFormat(d => { return `${100 * d}%`; })
             .ticks(5));
