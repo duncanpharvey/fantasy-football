@@ -6,13 +6,12 @@ fetch('../data.json').then(response => response.json())
 function createGraph(team) {
     const name = team.name;
     const ranks = team.ranks;
-    console.log(ranks)
 
     // graph dimensions
     const width = 300;
     const height = 180;
     const hMargin = 60;
-    const vMargin = 36
+    const vMargin = 36;
 
     const svg = d3.select("#graph-container")
         .append("div")
@@ -34,7 +33,7 @@ function createGraph(team) {
     const yScale = d3.scaleLinear().range([height, 0]);
 
     const g = svg.append("g")
-        .attr("transform", "translate(" + 0.6 * hMargin + "," + 0.5 * vMargin + ")");
+        .attr("transform", "translate(" + 0.65 * hMargin + "," + 0.3 * vMargin + ")");
 
     xScale.domain(ranks.map(d => { return d.rank; }));
     yScale.domain([0, 1]);
