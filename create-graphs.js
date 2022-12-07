@@ -60,8 +60,9 @@ function createGraph(team) {
         .attr("fill", d => { return colorPicker(d.rank); });
 
     function colorPicker(rank) {
-        if (rank <= 4) { return "#32a852" }
-        else if (rank == 12) { return "#c4141a" }
-        else { return "#323ca8"; }
+        if (rank <= 4) { return "#32A852" }
+        else if (rank >= 9 && rank <= 11) {return "#F08000"}
+        else if (rank == 12) { return "#C4141A" }
+        else { return "#323CA8"; }
     }
 }

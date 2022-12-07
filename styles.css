@@ -46,6 +46,10 @@
   background-color: rgba(0, 97, 186, 0.2);
 }
 
+.svg-container:nth-child(n+9)>.svg-content-responsive {
+  background-color: rgba(186, 81, 0, 0.2);
+}
+
 .svg-container:last-child>.svg-content-responsive {
   background-color: rgba(186, 0, 0, 0.2);
 }
