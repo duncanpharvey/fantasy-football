@@ -1,6 +1,30 @@
+// Detect if device has touch capability
+const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+// Track active bar globally for touch interactions
+let globalActiveBar = null;
+const globalTooltip = { hide: null };
+
 fetch('./data.json').then(response => response.json())
     .then(data => {
         data.teams.forEach(team => createGraph(team));
+
+        // Hide tooltip on scroll (mobile)
+        if (isTouchDevice) {
+            let scrollTimeout;
+            window.addEventListener('scroll', function() {
+                if (globalTooltip.hide) {
+                    globalTooltip.hide();
+                }
+                // Also hide during scroll with debounce
+                clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(() => {
+                    if (globalTooltip.hide) {
+                        globalTooltip.hide();
+                    }
+                }, 150);
+            }, { passive: true });
+        }
     });
 
 function createGraph(team) {
@@ -150,8 +174,20 @@ function createGraph(team) {
         .style("stroke-width", "1px")
         .style("stroke-dasharray", "3,3");
 
+    // Function to hide tooltip and reset active bar
+    const hideTooltip = function() {
+        if (globalActiveBar) {
+            d3.select(globalActiveBar).style("opacity", 1);
+            globalActiveBar = null;
+        }
+        tooltip.classed("visible", false);
+    };
+
+    // Store hide function globally for scroll handler
+    globalTooltip.hide = hideTooltip;
+
     // bars representing data values
-    g.selectAll(".bar")
+    const bars = g.selectAll(".bar")
         .data(ranks)
         .enter().append("rect")
         .attr("class", "bar")
@@ -163,29 +199,69 @@ function createGraph(team) {
         .attr("rx", 4)
         .attr("ry", 4)
         .style("cursor", "pointer")
-        .style("transition", "opacity 0.2s ease")
-        .on("mouseover", function (event, d) {
+        .style("transition", "opacity 0.2s ease");
+
+    if (isTouchDevice) {
+        // Touch events for mobile
+        bars.on("touchstart", function (event, d) {
+            event.preventDefault();
+            
+            // If tapping a different bar, hide previous tooltip
+            if (globalActiveBar && globalActiveBar !== this) {
+                d3.select(globalActiveBar).style("opacity", 1);
+            }
+            
+            // If tapping the same bar, hide and return
+            if (globalActiveBar === this) {
+                hideTooltip();
+                return;
+            }
+            
+            // Set new active bar
+            globalActiveBar = this;
             d3.select(this).style("opacity", 0.7);
-
+            
             const percentage = (d.pct * 100).toFixed(1);
-
+            
+            // Get bar position for tooltip placement
+            const barRect = this.getBoundingClientRect();
+            const tooltipX = barRect.left + (barRect.width / 2);
+            const tooltipY = barRect.top - 10;
+            
             tooltip.html(`
                 <div class="tooltip-row">${percentage}%</div>
             `)
                 .classed("visible", true)
-                .style("left", (event.clientX + 10) + "px")
-                .style("top", (event.clientY - 10) + "px")
-                .style("transform", "none");
-        })
-        .on("mousemove", function (event) {
-            tooltip
-                .style("left", (event.clientX + 10) + "px")
-                .style("top", (event.clientY - 10) + "px");
-        })
-        .on("mouseout", function (event) {
-            d3.select(this).style("opacity", 1);
-            tooltip.classed("visible", false);
+                .style("left", tooltipX + "px")
+                .style("top", tooltipY + "px")
+                .style("transform", "translate(-50%, -100%)");
         });
+    } else {
+        // Desktop hover events
+        bars
+            .on("mouseover", function (event, d) {
+                d3.select(this).style("opacity", 0.7);
+
+                const percentage = (d.pct * 100).toFixed(1);
+
+                tooltip.html(`
+                    <div class="tooltip-row">${percentage}%</div>
+                `)
+                    .classed("visible", true)
+                    .style("left", (event.clientX + 10) + "px")
+                    .style("top", (event.clientY - 10) + "px")
+                    .style("transform", "none");
+            })
+            .on("mousemove", function (event) {
+                tooltip
+                    .style("left", (event.clientX + 10) + "px")
+                    .style("top", (event.clientY - 10) + "px");
+            })
+            .on("mouseout", function (event) {
+                d3.select(this).style("opacity", 1);
+                tooltip.classed("visible", false);
+            });
+    }
 
     function colorPicker(rank) {
         if (rank <= 4) { return "#10b981" }  // Green for playoff spots
