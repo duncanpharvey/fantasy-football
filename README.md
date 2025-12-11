@@ -1,5 +1,20 @@
 # Fantasy Football Playoff Predictor
 
-- python3 simulator.py
-- npx http-server -c-1
-- localhost:8080
+## Setup
+
+```bash
+python -m venv .venv
+. .venv/bin/activate
+pip install -r requirements.txt
+
+
+npm install
+```
+
+## Development Workflow
+
+```bash
+python3 simulator.py
+
+npm run dev
+```

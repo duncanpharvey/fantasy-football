@@ -2,12 +2,24 @@
 <html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="UTF-8" />
+    <title>Fantasy Football Playoff Predictor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="./create-graphs.js"></script>
     <link href="./styles.css" rel="stylesheet" />
   </head>
 
   <body>
-    <div id="graph-container"></div>
+    <div class="page-container">
+      <header class="page-header">
+        <h1 class="page-title">🏈 Fantasy Football Playoff Predictor</h1>
+        <p class="page-subtitle">Probability of finishing at each rank based on 1M simulations</p>
+      </header>
+      <div id="graph-container"></div>
+    </div>
+    <div class="tooltip"></div>
   </body>
 </html>
