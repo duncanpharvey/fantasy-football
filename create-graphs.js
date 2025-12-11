@@ -150,11 +150,8 @@ function createGraph(team) {
         .style("stroke-width", "1px")
         .style("stroke-dasharray", "3,3");
 
-    // Track active bar for touch events
-    let activeBar = null;
-
     // bars representing data values
-    const bars = g.selectAll(".bar")
+    g.selectAll(".bar")
         .data(ranks)
         .enter().append("rect")
         .attr("class", "bar")
@@ -167,11 +164,7 @@ function createGraph(team) {
         .attr("ry", 4)
         .style("cursor", "pointer")
         .style("transition", "opacity 0.2s ease")
-        // Desktop hover events
         .on("mouseover", function (event, d) {
-            // Don't trigger on touch devices
-            if (event.sourceEvent && event.sourceEvent.type.startsWith('touch')) return;
-
             d3.select(this).style("opacity", 0.7);
 
             const percentage = (d.pct * 100).toFixed(1);
@@ -185,70 +178,14 @@ function createGraph(team) {
                 .style("transform", "none");
         })
         .on("mousemove", function (event) {
-            if (event.sourceEvent && event.sourceEvent.type.startsWith('touch')) return;
-
             tooltip
                 .style("left", (event.clientX + 10) + "px")
                 .style("top", (event.clientY - 10) + "px");
         })
         .on("mouseout", function (event) {
-            if (event.sourceEvent && event.sourceEvent.type.startsWith('touch')) return;
-
             d3.select(this).style("opacity", 1);
             tooltip.classed("visible", false);
-        })
-        // Touch events for mobile
-        .on("touchstart", function (event, d) {
-            event.preventDefault(); // Prevent mouse events from firing
-
-            // If tapping the same bar, hide tooltip
-            if (activeBar === this) {
-                d3.select(this).style("opacity", 1);
-                tooltip.classed("visible", false);
-                activeBar = null;
-                return;
-            }
-
-            // Reset previous active bar
-            if (activeBar) {
-                d3.select(activeBar).style("opacity", 1);
-            }
-
-            // Set new active bar
-            activeBar = this;
-            d3.select(this).style("opacity", 0.7);
-
-            const percentage = (d.pct * 100).toFixed(1);
-
-            // Get bar position for tooltip placement
-            const barElement = this;
-            const barRect = barElement.getBoundingClientRect();
-            const tooltipX = barRect.left + (barRect.width / 2);
-            const tooltipY = barRect.top - 10;
-
-            tooltip.html(`
-                <div class="tooltip-row">${percentage}%</div>
-            `)
-                .classed("visible", true)
-                .style("left", tooltipX + "px")
-                .style("top", tooltipY + "px")
-                .style("transform", "translate(-50%, -100%)");
         });
-
-    // Close tooltip when tapping outside on mobile
-    if ('ontouchstart' in window) {
-        d3.select('body').on('touchstart.tooltip', function (event) {
-            // Check if tap is outside any bar
-            const target = event.target;
-            const isBar = target.classList.contains('bar');
-
-            if (!isBar && activeBar) {
-                d3.select(activeBar).style("opacity", 1);
-                tooltip.classed("visible", false);
-                activeBar = null;
-            }
-        });
-    }
 
     function colorPicker(rank) {
         if (rank <= 4) { return "#10b981" }  // Green for playoff spots
